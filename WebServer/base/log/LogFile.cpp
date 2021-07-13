@@ -6,12 +6,12 @@
 
 #include "LogFile.h"
 
-LogFile::LogFile(const std::string &bn, int fN)
-        : basename_(bn),
+LogFile::LogFile(const std::string &filename, int fN)
+        : filename_(filename),
           flushEveryN_(fN),
           count_(0),
           mutex_(new MutexLock) {
-    file_.reset(new AppendFile(bn));
+    file_.reset(new AppendFile(filename));
 }
 
 LogFile::~LogFile() = default;

@@ -2,6 +2,9 @@
 set(
         SOURCES
         Main.cpp
+        component/Utils.cpp
+        component/EventLoop.cpp
+        component/ArgsParser.cpp
 )
 
 # 父目录的CMakeLists也会对子目录的文件生效

@@ -14,8 +14,6 @@
 #include "vector"
 #include "memory"
 
-class AsyncLogging;
-
 const int kSmallBuffer = 4000;
 const int kLargeBuffer = 4000 * 1000;
 
@@ -25,8 +23,9 @@ class FixedBuffer : NoCopyable {
 public:
     FixedBuffer() : cur_(data_) {}
 
-    ~FixedBuffer() {}
+    ~FixedBuffer() = default;
 
+    // 调用append之前，记得调用reset
     void append(const char *buf, size_t len) {
         if (avail() > static_cast<int >(len)) {
             memcpy(cur_, buf, len);
@@ -55,7 +54,8 @@ public:
         cur_ += len;
     }
 
-    void reset() {
+    // 准备开始输入数据或重置缓冲区
+    void clear() {
         cur_ = data_;
     }
 
@@ -71,11 +71,12 @@ private:
     }
 
     // 缓冲区
-    char data_[SIZE];
+    char data_[SIZE]{};
     // cur指向data_空闲区域地址
     char *cur_{};
 };
 
+// stream流，有一个小的缓冲区，给宏定义LOG(每次会创建一个logger)使用
 class LogStream : NoCopyable {
 
 public:
@@ -84,7 +85,7 @@ public:
 
     // --verbose
     LogStream &operator<<(bool v) {
-        buffer_.append(v ? "1" : "0", 1);
+        buffer_.append(v ? "true" : "false", v ? strlen("true") : strlen("false"));
         return *this;
     }
 
@@ -149,7 +150,7 @@ public:
     }
 
     void resetBuffer() {
-        buffer_.reset();
+        buffer_.clear();
     }
 
 private:
@@ -159,7 +160,8 @@ private:
     void formatInteger(T);
 
     Buffer buffer_{};
-    static const int kMaxNumericSize_ = 32;
+    // 转换数字的最大长度
+    static const int kMaxNumericSize = 32;
 };
 
 

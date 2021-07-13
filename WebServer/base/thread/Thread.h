@@ -13,12 +13,13 @@
 #include "sys/syscall.h"
 #include "unistd.h"
 #include "functional"
+#include "CountDownLatch.h"
 
 class Thread : NoCopyable {
 public:
     typedef std::function<void()> ThreadFunc;
 
-    explicit Thread(const ThreadFunc &, const std::string &name = std::string());
+    explicit Thread(const ThreadFunc &, const std::string &name = "Thread-Default");
 
     ~Thread();
 
@@ -26,18 +27,20 @@ public:
 
     int join();
 
-    bool started();
+    bool started() const { return started_; }
+
+    bool joined() const { return joined_; }
 
 private:
     void setDefaultName();
 
-    bool started_{};
-    bool joined_{};
+    bool started_;
+    bool joined_;
     pthread_t pthreadId_;
     pid_t tid_;
     ThreadFunc func_;
     std::string name_;
-
+    CountDownLatch latch_;
 };
 
 

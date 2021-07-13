@@ -1,11 +1,11 @@
 //
 // Created by 蒋澳然 on 2021/7/12.
 // email: 875691208@qq.com
-// $desc
+// FileUtil提供最底层的写文件
 //
 
-#ifndef MYWEBSERVER_FILEUTIL_H
-#define MYWEBSERVER_FILEUTIL_H
+#ifndef MYWEBSERVER_APPENDFILE_H
+#define MYWEBSERVER_APPENDFILE_H
 
 #include "NoCopyable.h"
 #include "string"
@@ -17,7 +17,7 @@ constexpr int FILE_BUFFER_SIZE(int k) {
 class AppendFile : NoCopyable {
 
 public:
-    explicit AppendFile(const std::string &fileName);
+    explicit AppendFile(const std::string &filename);
 
     ~AppendFile();
 
@@ -31,10 +31,10 @@ private:
     // 二层封装
     size_t write(const char *logline, size_t len);
 
-    FILE *fp_{};
+    FILE *fp_;
     // 64K的文件写缓冲区
     char buffer_[FILE_BUFFER_SIZE(64)]{};
 };
 
 
-#endif //MYWEBSERVER_FILEUTIL_H
+#endif //MYWEBSERVER_APPENDFILE_H
