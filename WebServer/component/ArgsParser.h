@@ -11,7 +11,7 @@
 #include "thread"
 #include "log/Logger.h"
 
-const int CORE_NUM = static_cast<int>(std::thread::hardware_concurrency());
+const int cpucore = static_cast<int>(std::thread::hardware_concurrency());
 const int DEFAULT_PORT = 80;
 
 struct IllegalArgs : std::exception {
@@ -27,13 +27,13 @@ public:
 
     explicit ArgsParser(const char *const opt)
             : opt_(opt),
-              threadNum_(CORE_NUM),
+              threadNum_(cpucore),
               port_(DEFAULT_PORT),
               logPath_(Logger::getLogfilename()) {}
 
     void parse(int argc, char *const argv[]);
 
-    int threadNum() const;
+    int threadnum() const;
 
     int port() const;
 

@@ -7,6 +7,8 @@
 #include "string"
 #include "ArgsParser.h"
 #include "log/Logger.h"
+#include "EventLoop.h"
+#include "Server.h"
 
 int main(int argc, char *argv[]) {
     // parse args
@@ -17,9 +19,11 @@ int main(int argc, char *argv[]) {
 #ifndef _PTHREADS
     LOG << "_PTHREADS is not defined!\n";
 #endif
-    // set loop
-
+    // set loop and server
+    EventLoop mainLoop;
+    Server httpServer(&mainLoop, argsParser.threadnum(), argsParser.port());
     // start server
-
+    httpServer.start();
+    mainLoop.loop();
     return 0;
 }

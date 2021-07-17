@@ -34,7 +34,7 @@ void ArgsParser::parse(int argc, char *const argv[]) {
     }
 }
 
-int ArgsParser::threadNum() const {
+int ArgsParser::threadnum() const {
     return threadNum_;
 }
 

@@ -108,7 +108,7 @@ ssize_t writen(int fd, std::string &sbuff) {
     return write_sum;
 }
 
-void handle_for_sigpipe() {
+void handle_ignore_sigpipe() {
     struct sigaction sa{};
     memset(&sa, '\0', sizeof sa);
     sa.sa_handler = SIG_IGN;    // ignore signal
@@ -128,6 +128,7 @@ int set_socket_non_blocking(int fd) {
 
 void set_socket_no_delay(int fd) {
     int enable = 1;
+    // TCP_NODELAY 禁用Nagle算法，即tcp数据段即使传送，即使数据包很小，不会等到内核缓冲区满才发送
     // 在socket层进行设置: SOL_SOCKET，其他层如tcp层通过 IPPROTO_TCP 指定
     setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (void *) &enable, sizeof enable);
 }

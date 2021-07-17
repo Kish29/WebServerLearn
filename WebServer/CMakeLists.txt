@@ -3,8 +3,14 @@ set(
         SOURCES
         Main.cpp
         component/Utils.cpp
+        component/HttpData.cpp
+        component/Channel.cpp
+        component/Timer.cpp
         component/EventLoop.cpp
+        component/Server.cpp
         component/ArgsParser.cpp
+        component/Epoll.cpp
+#        tests/threadpool/ThreadPool.cpp
 )
 
 # 父目录的CMakeLists也会对子目录的文件生效
@@ -19,4 +25,4 @@ add_executable(WebServer ${SOURCES})
 target_link_libraries(WebServer libserver_base)
 
 add_subdirectory(base)
-#add_subdirectory(tests)
+add_subdirectory(tests)

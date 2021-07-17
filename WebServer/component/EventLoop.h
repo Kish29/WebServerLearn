@@ -7,8 +7,13 @@
 #ifndef MYWEBSERVER_EVENTLOOP_H
 #define MYWEBSERVER_EVENTLOOP_H
 
+#include "vector"
+#include "MutexLock.h"
 #include "functional"
+#include "Channel.h"
+#include "memory"
 #include "cassert"
+#include "Epoll.h"
 
 using namespace std;
 
@@ -29,7 +34,7 @@ public:
 
     void queueInLoop(Functor &cb);
 
-    bool isInLoopThread() const;
+    bool isInLoopThread() const { return }
 
     void assertInLoopThread() const { assert(isInLoopThread()); }
 
@@ -37,6 +42,23 @@ public:
 
 private:
     bool looping_;
+    std::shared_ptr<Epoll> poller_;
+    int wakeupFd_;
+    bool quit_;
+    bool eventHandling_;
+    mutable MutexLock mutex_;
+    std::vector<Functor> pendingFunctors_;
+    bool callingPendingFunctors_;
+    const pid_t threadId_;
+    std::shared_ptr<Channel> spWakeupChannel_;
+
+    void wakeup();
+
+    void handleRead();
+
+    void doPendingFunctors();
+
+    void handleConn();
 };
 
 #endif  // MYWEBSERVER_EVENTLOOP_H
