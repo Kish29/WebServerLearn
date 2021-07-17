@@ -1,8 +1,9 @@
 CXX := g++
-CXXFLAGS := --std=c++11 -Wall -g -I ../component/threadpool
+CXXFLAGS := --std=c++11 -Wall -g -I ../component
 LDFLAGS := -lpthread
 
 target: ComponentTest.o ThreadPool.o
+	$(CXX) $(CXXFLAGS) -o target ComponentTest.o ThreadPool.o $(LDFLAGS)
 
 ThreadPool.o: ../component/threadpool/ThreadPool.cpp
 	$(CXX) $(CXXFLAGS) -c ../component/threadpool/ThreadPool.cpp $(LDFLAGS)

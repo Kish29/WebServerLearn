@@ -24,13 +24,13 @@ const int THREADPOOL_SHUTDOWN = -4;
 const int THREADPOOL_THREAD_FAILURE = -5;
 const int THREADPOOL_GRACEFUL = -6;
 
-const int MAX_THREADS = 1 << 10;
-const int MAX_QUEUE = (1 << 16) - 1;
+const int MAX_THREADS = 1 << 10;    // 1024
+const int MAX_QUEUE = (1 << 16) - 1;    // 65536
 
-typedef enum {
+enum ShutdownMode {
     IMMEDIATE_SHUTDOWN = 1,
     GRACEFUL_SHUTDOWN = 2
-} ShutdownMode;
+};
 
 struct ThreadPoolTask {
     std::function<void(std::shared_ptr<void>)> fun;
@@ -52,7 +52,7 @@ public:
 
     ThreadPool &operator=(const ThreadPool &other) = delete;
 
-    int create(int _thread_count, int _queue_size = 1 << 11);
+    int create(int _thread_count, int _queue_size = 1 << 11);   // 2048
 
     int submit(
             const std::shared_ptr<void> &args,
@@ -70,7 +70,9 @@ public:
 private:
     ThreadPool();
 
-    virtual ~ThreadPool() = default;
+    virtual ~ThreadPool() {
+        printf("ThreadPool now has been shutdown\n");
+    };
 
     static void *thread_routine(void *args);
 
@@ -83,7 +85,7 @@ private:
     std::vector<ThreadPoolTask> work_queue;
     std::atomic_int16_t thread_count_;
     int queue_size_;
-    int head_;
+    int curr_;
     int tail_;
     int work_count;
     std::atomic_bool shutdown_;

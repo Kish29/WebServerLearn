@@ -18,7 +18,7 @@ std::vector<pthread_t> ThreadPool::threads_{};
 std::vector<ThreadPoolTask> ThreadPool::work_queue{};
 int ThreadPool::thread_count_ = 0;
 int ThreadPool::queue_size_ = 0;
-int ThreadPool::head_ = 0;
+int ThreadPool::curr_ = 0;
 int ThreadPool::tail_ = 0;
 int ThreadPool::work_count = 0;
 int ThreadPool::shutdown_mode_ = 0;
@@ -31,7 +31,7 @@ ThreadPool::ThreadPool() :
         work_queue({}),
         thread_count_(0),
         queue_size_(0),
-        head_(0),
+        curr_(0),
         tail_(0),
         work_count(0),
         shutdown_(false),
@@ -47,7 +47,7 @@ int ThreadPool::create(int _thread_count, int _queue_size) {
     threads_.resize(_thread_count);
     work_queue.resize(queue_size_);
 
-    head_ = tail_ = work_count = 0;
+    curr_ = tail_ = work_count = 0;
     started_num_ = 0;
 
     for (int i = 0; i < _thread_count; ++i) {
@@ -102,11 +102,13 @@ int ThreadPool::submit(
     }
 
     do {
+        // 工作队列已满
         if (work_count == queue_size_) {
             err = THREADPOOL_QUEUE_FULL;
             break;
         }
-        if (shutdown_mode_) {
+        // 线程池已经关闭
+        if (shutdown_) {
             err = THREADPOOL_SHUTDOWN;
             break;
         }
@@ -118,12 +120,14 @@ int ThreadPool::submit(
         work_count++;
 
         // 唤醒一个线程
+//        printf("signal one thread\n");
         if (pthread_cond_signal(&cond_) != 0) {
             err = THREADPOOL_LOCK_FAILURE;
             break;
         }
     } while (false);
 
+    // 释放锁
     if (pthread_mutex_unlock(&lock_) != 0) {
         err = THREADPOOL_LOCK_FAILURE;
     }
@@ -178,8 +182,10 @@ void *ThreadPool::thread_routine(void *args) {
     while (true) {
 //        printf("thread is running...\n");
         ThreadPoolTask task;
+        // 加锁，从工作队列中拿任务
         pthread_mutex_lock(&instance->lock_);
         while (!instance->shutdown_ && instance->work_count == 0) {
+//            printf("thread wait\n");
             pthread_cond_wait(&instance->cond_, &(instance->lock_));
         }
         if (instance->shutdown_) {
@@ -197,14 +203,15 @@ void *ThreadPool::thread_routine(void *args) {
                 break;
             }
         }
-        task.fun = instance->work_queue[instance->head_].fun;
-        task.args = instance->work_queue[instance->head_].args;
+        task.fun = instance->work_queue[instance->curr_].fun;
+        task.args = instance->work_queue[instance->curr_].args;
 
-        instance->work_queue[instance->head_].fun = nullptr;
-        instance->work_queue[instance->head_].args.reset();
+        instance->work_queue[instance->curr_].fun = nullptr;
+        instance->work_queue[instance->curr_].args.reset();
 
-        instance->head_ = (instance->head_ + 1) % instance->queue_size_;
+        instance->curr_ = (instance->curr_ + 1) % instance->queue_size_;
         instance->work_count--;
+        // 释放锁
         pthread_mutex_unlock(&(instance->lock_));
         task.run();
 //        sleep(1);
